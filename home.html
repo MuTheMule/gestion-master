@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Test
+        </title>
+    </head>
+    <body>
+        <form method="GET" action="scanProduct">
+            <fieldset>
+                <legend>
+                    Bar Code Example :
+                </legend>
+                <label>
+                    978020137962
+                </label>
+                <br>
+                <label>
+                    Enter your own Barcode:
+                </label>
+                <input type="text" name="codebar"/>
+                <input type="submit" value="Send"/>
+            </fieldset>
+        </form>
+        <form method="GET" action="saveProduct">
+            <fieldset>
+                <legend>
+                    Produit à ajouter:
+                </legend>
+                <label>
+                    Barcode:
+                </label>
+                <input type="text" name="codebar" pattern="{0,9}[12]"/>
+                <br>
+                <label>
+                    Designation:
+                </label>
+                <input type="text" name="designation"/>
+                <br>
+                <label>
+                    Prix:
+                </label>
+                <input type="text" name="prix" pattern="{0,9}[0,6]"/>
+                <br>
+                <input type="submit" value="Send"/>
+            </fieldset>
+        </form>
+    </body>
+</html>
