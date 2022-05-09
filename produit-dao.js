@@ -29,6 +29,8 @@ exports.sql = (raw) => {
         console.log(keywords[i]);
       }*/
 
+      //
+
       var includingFound = false;
 
       for(i; typeof keywords[i] != 'undefined' && keywords[i] != 'including' && !includingFound;i++){
