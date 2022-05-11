@@ -1,5 +1,141 @@
 const dbops = require('./dbops.js');
 
+var statement = '';
+
+var values = [];
+var tables = [];
+
+var projectionAttributes = [];
+
+var selectionConnectors = [];
+var selectionCriteria = [];
+
+const equationOperators = ['=','<','>','~'];
+const valueMarkers = ['!','?'];
+const logicalConnectors = ['and','or'];
+const projectionKeywords = ['including','excluding','along'];
+
+is = (expression,nature) => {
+  for(i = 0 ; i < nature.length ; i++){
+    if(expression == nature[i]){
+      return true;
+    }
+  }
+  return false;
+}
+
+projection = (attributes) => {
+
+  for(i = 0 ; i < attributes.length ; i++){
+    projectionAttributes.push(attributes[i]);
+  }
+    
+  return;
+
+}
+
+selection = (expressions) => {
+
+  projectionKeywordFound = false;
+
+for(i = 0 ; i < expressions.length && !is(expressions[i],projectionKeywords) && !projectionKeywordFound; i++){
+
+  var operator;
+  var value;
+  var attribute;
+
+  var j = i;
+
+  for(j; !is(expressions[j],logicalConnectors) ;j++){
+
+    if(is(expressions[j],equationOperators)){
+      operator = expressions[j];
+      console.log('[operator] = '+expressions[j]);
+    }
+    else if(is(expressions[j].charAt(0),valueMarkers)){
+      value = expressions[j].split('!')[1];
+      values.push(value);
+      console.log('[value] = '+expressions[j].split('!')[1]);
+    }
+    else if(is(expressions[j],projectionKeywords)){
+      projectionKeywordFound = true;
+      break;
+    }
+    else{
+      attribute = expressions[j];
+      projectionAttributes.push(attribute);
+      console.log('[attribute] = '+expressions[j]);
+    }
+
+  }
+
+  selectionConnectors.push(expressions[j]);
+  selectionCriteria.push({operator:operator,value:value,attribute:attribute});
+  
+  i = j;
+    
+}
+
+  return;
+
+}
+
+buildQuery = () => {
+
+  statement = 'SELECT ';
+
+  for(i = 0 ; i <projectionAttributes.length-1; i++){
+    statement += projectionAttributes[i] + ', ';
+  }
+
+  statement += projectionAttributes[projectionAttributes.length] + ' FROM ';
+
+  for(i = 0 ; i <tables.length-1; i++){
+    statement += tables[i] + ', ';
+  }
+
+  statement += tables[tables.length] + ' WHERE ';
+
+  for(i = 0 ; i <selectionConnectors.length; i++){
+    statement += selectionCriteria[i].attribute + selectionCriteria[i].operator + selectionCriteria[i].value + ' ' + selectionConnectors[i] + ' ';
+  }
+
+  statement += selectionCriteria[i] + ';';
+
+  return statement;
+
+}
+
+exports.analysis = (raw) => {
+  
+  const keywords = raw.split(' ');
+  values = [];
+  tables = [];
+
+  switch (keywords[0]){
+    case 'find' :
+
+      for(i = 0; i<keywords.length; i++){
+        if(keywords[i]=='by')
+          selection(keywords.splice(i,keywords.length-i));
+        if(keywords[i]=='including')
+          projection(keywords.splice(i,keywords.length-i));
+        tables.push(keywords[i]);
+      }
+
+      break;
+    case 'save' :
+      break;
+    default : console.log('query invalid');
+      break;
+  }
+
+  console.log(buildQuery());
+
+  // find product receipt by id = !5 and barcode ?lait or name = !600 including price timestamp
+
+}
+
 exports.sql = (raw) => {
 
   var statement = '';
@@ -13,11 +149,19 @@ exports.sql = (raw) => {
     case 'find' :
 
       tablesOfReference = [];
-      var i = 0;
+      var i = 1;
 
-      for(i; keywords[i]!='by'; i++){
+    for(i; i<keywords.length; i++){
+      tablesOfReference.push(keywords[i])
+    }
+
+    /*if(raw.indexOf('by')!=0){
+      */
+      for(i; keywords[i]!='by' && i < keywords.length; i++){
         tablesOfReference.push(keywords[i]);
       }
+
+    /*}*/
 
       by = keywords[i];
       i++;
@@ -162,7 +306,8 @@ exports.getProduitByCodebar = (codebar)=> {
 
     const query = {
         name: 'fetch-produit-by-codebar',
-        text: 'SELECT * FROM produit WHERE codebar=$1',
+        //text: 'SELECT * FROM produit WHERE codebar=$1',
+        text: 'select id,designation,property,stock_price,unit_price,quantity from product,unit where barcode = $1 and product.id = unit.product_id',
         values: [codebar]
       };
     

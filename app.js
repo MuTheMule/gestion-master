@@ -18,7 +18,7 @@ app.get('/dev/:action', (request, response) => {
 
     const result = async () => {
         //const data = await produitDAO.execute(request.params.action);
-        const data = await produitDAO.sql(request.params.action);
+        const data = await produitDAO.analysis(request.params.action);
         return data;
     }
 
@@ -106,7 +106,9 @@ app.get('/scanProduct', (request, response) => {
     
     result().then(data => {
         if(typeof data !== 'undefined' && data)
-            console.log(data);
+            {console.log(data);
+            response.setHeader('Content-Type','application/json');
+            response.send(JSON.stringify(data));}
         else
             console.log('No such product!');
     });

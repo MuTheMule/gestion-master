@@ -2,7 +2,7 @@ const { Pool, Client } = require('pg');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  database: 'postgres',
+  database: 'gestion',
   password: 'aaaa',
   port: 5432,
 });
@@ -10,12 +10,12 @@ const pool = new Pool({
 const client = new Client({
   user: 'postgres',
   host: 'localhost',
-  database: 'postgres',
+  database: 'gestion',
   password: 'aaaa',
   port: 5432,
 });
 
-//client.connect();
+client.connect();
 
 exports.query = (query) => {
 
