@@ -114,6 +114,22 @@ app.get('/scanProduct', (request, response) => {
     });
 });
 
+app.get('/creditTotal', (request, response) => {
+    const result = async () => {
+        const data = await produitDAO.getCreditTotal();
+        return data;
+    }
+    
+    result().then(data => {
+        if(typeof data !== 'undefined' && data)
+            {console.log(data);
+            response.setHeader('Content-Type','application/json');
+            response.send(JSON.stringify(data));}
+        else
+            console.log('Error!');
+    });
+});
+
 /*const result = async () => {
     const data = await dao.getAll('product');
     return data;

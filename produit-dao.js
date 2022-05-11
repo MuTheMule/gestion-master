@@ -38,7 +38,47 @@ selection = (expressions) => {
 
   projectionKeywordFound = false;
 
-for(i = 0 ; i < expressions.length && !is(expressions[i],projectionKeywords) && !projectionKeywordFound; i++){
+  for(i; typeof expressions[i] != 'undefined' && expressions[i] != 'including' && !projectionKeywordFound;i++){
+
+    var attribute = '';
+    var operator = '';
+    var value = '';
+
+    var j = i;
+
+    for(j; typeof expressions[j] != 'undefined' && expressions[j] != 'and';j++){
+
+        if(expressions[j]==('=')){
+          operator = expressions[j];
+          console.log('[operator] = '+expressions[j]);
+        }
+        else if(expressions[j].charAt(0)==('!')){
+          value = expressions[j].split('!')[0];
+          values.push(value);
+          console.log('[value] = '+expressions[j].split('!')[1]);
+        }
+        else if(expressions[j]=='including'){
+          projectionKeywordFound = true;
+          break;
+        }
+        else{
+          attribute = expressions[j];
+          projectionAttributes.push(attribute);
+          console.log('[attribute] = '+expressions[j]);
+        }
+
+    }
+
+    selectionConnectors.push(expressions[j]);
+    selectionCriteria.push({operator:operator,value:value,attribute:attribute});
+    i = j;
+
+  }
+
+
+/*for(i = 0 ; i < expressions.length && !is(expressions[i],projectionKeywords) && !projectionKeywordFound; i++){
+
+  console.log('loop start i : '+i);
 
   var operator;
   var value;
@@ -47,6 +87,8 @@ for(i = 0 ; i < expressions.length && !is(expressions[i],projectionKeywords) && 
   var j = i;
 
   for(j; !is(expressions[j],logicalConnectors) ;j++){
+
+    console.log('loop start j : '+j);
 
     if(is(expressions[j],equationOperators)){
       operator = expressions[j];
@@ -74,7 +116,9 @@ for(i = 0 ; i < expressions.length && !is(expressions[i],projectionKeywords) && 
   
   i = j;
     
-}
+  console.log('loop end i : '+i);
+
+}*/
 
   return;
 
@@ -114,6 +158,8 @@ exports.analysis = (raw) => {
 
   switch (keywords[0]){
     case 'find' :
+
+      console.log(keywords.splice(i,keywords.length-i));
 
       for(i = 0; i<keywords.length; i++){
         if(keywords[i]=='by')
@@ -306,12 +352,143 @@ exports.getProduitByCodebar = (codebar)=> {
 
     const query = {
         name: 'fetch-produit-by-codebar',
-        //text: 'SELECT * FROM produit WHERE codebar=$1',
         text: 'select id,designation,property,stock_price,unit_price,quantity from product,unit where barcode = $1 and product.id = unit.product_id',
         values: [codebar]
       };
     
     return dbops.query(query);
+}
+
+exports.getCreditTotal = ()=> {
+
+  const query = {
+      name: 'fetch-total-debt',
+      text: 'select sum(debt) from receipt',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getRetourTotal = ()=> {
+
+  const query = {
+      name: 'fetch-total-return',
+      text: "select sum(transaction.unit_price * transaction.quantity) as retour from product,unit,transaction where product.id = unit.product_id and transaction.unit_code = unit.barcode and transaction.status = 'f'",
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getCreditDuJour = ()=> {
+
+  const query = {
+      name: 'fetch-today-credit',
+      text: 'select sum(debt) from receipt where timestamp::date = current_date',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMeilleurProduit = ()=> {
+
+  const query = {
+      name: 'fetch-best-product',
+      text: 'select designation,property from unit,product where unit.product_id = product.id and unit.barcode = (select unit_code from transaction,unit,product where unit.product_id = product.id and transaction.unit_code = unit.barcode group by unit_code order by sum(transaction.quantity) desc limit 1)',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMeilleurProduitDuJour = ()=> {
+
+  const query = {
+      name: 'fetch-daily-best-product',
+      text: 'select designation,property from unit,product where unit.product_id = product.id and unit.barcode = (select unit_code from transaction,unit,product,receipt where unit.product_id = product.id and transaction.unit_code = unit.barcode and transaction.receipt_id = receipt.id and receipt.timestamp::date = current_date group by unit_code order by sum(transaction.quantity) desc limit 1)',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMauvaisProduit = ()=> {
+
+  const query = {
+      name: 'fetch-worst-product',
+      text: 'select designation,property from unit,product where unit.product_id = product.id and unit.barcode = (select unit_code from transaction,unit,product where unit.product_id = product.id and transaction.unit_code = unit.barcode group by unit_code order by sum(transaction.quantity) asc limit 1)',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMauvaisProduitDuJour = ()=> {
+
+  const query = {
+      name: 'fetch-daily-worst-product',
+      text: 'select designation,property from unit,product where unit.product_id = product.id and unit.barcode = (select unit_code from transaction,unit,product,receipt where unit.product_id = product.id and transaction.unit_code = unit.barcode and transaction.receipt_id = receipt.id and receipt.timestamp::date = current_date group by unit_code order by sum(transaction.quantity) asc limit 1)',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMeuilleurRecette = ()=> {
+
+  const query = {
+      name: 'fetch-best-recipe',
+      text: 'select receipt.timestamp::date,sum(transaction.unit_price*transaction.quantity) from transaction,unit,product,receipt where transaction.unit_code = unit.barcode and receipt.id = transaction.receipt_id and unit.product_id = product.id group by receipt.timestamp::date order by sum desc limit 1',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getMauvaiseRecette = ()=> {
+
+  const query = {
+      name: 'fetch-worst-recipe',
+      text: 'select receipt.timestamp::date,sum(transaction.unit_price*transaction.quantity) from transaction,unit,product,receipt where transaction.unit_code = unit.barcode and receipt.id = transaction.receipt_id and unit.product_id = product.id group by receipt.timestamp::date order by sum asc limit 1',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getNombreDeProduits = () => {
+
+  const query = {
+      name: 'fetch-number-of-products',
+      text: 'select count(*) from product',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getToutProduits = () => {
+
+  const query = {
+      name: 'fetch-all-products',
+      text: 'select barcode,designation, stock_price, unit_price, property, quantity from product, unit where unit.product_id = product.id',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getGainsTotalDeJour = (date) => {
+
+  const query = {
+      name: 'fetch-daily-gains',
+      text: 'select sum(transaction.unit_price*transaction.quantity) from transaction, product, unit, receipt where transaction.unit_code = unit.barcode and unit.product_id = product.id and transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
+      values: [date]
+    };
+  
+  return dbops.query(query);
 }
 
 exports.saveProduit = (produit)=> {
