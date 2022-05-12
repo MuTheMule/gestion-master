@@ -96,6 +96,42 @@ app.get('/saveProduct',(request,response) => {
     });
 });
 
+app.get('/saveUnit',(request,response) => {
+
+    const product_id = async () => {
+        const data = await produitDAO.getProduitByCodebar(request.query.barcode);
+        return data;
+    }
+    product_id().then(data => {
+        if(typeof data !== 'undefined' && data){
+            console.log(data);
+        }
+        else{
+            console.log('Unable to fetch product!');
+        }
+    });
+
+    const unit = {
+        barcode: request.query.barcode,
+        property: request.query.property,
+        quantity: request.query.quantity,
+        product_id: product_id()
+    };
+
+    const result = async () => {
+        const data = await produitDAO.saveUnit(unit);
+        return data;
+    }
+    result().then(data => {
+        if(typeof data !== 'undefined' && data){
+            console.log(data);
+        }
+        else{
+            console.log('Unable to save unit!');
+        }
+    });
+});
+
 app.get('/scanProduct', (request, response) => {
     console.log('fetched successfully : '+request.query.codebar);
     const result = async () => {

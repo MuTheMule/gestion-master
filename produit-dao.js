@@ -505,10 +505,14 @@ exports.saveProduit = (product) => {
 
 exports.saveUnit = (unit)=> {
 
+  const product_id = this.getProduitByCodebar(unit.codebar);
+
+  console.log(product_id);
+
   const query = {
-    name: 'save-product',
-    text: 'INSERT INTO product(designation, stock_price, unit_price, timestamp) VALUES($1, $2, $3, $4) RETURNING *',
-    values: [produit.designation, produit.stock_price, produit.unit_price, produit.timestamp]
+    name: 'save-unit',
+    text: 'INSERT INTO unit(barcode, product_id, property, quantity, timestamp) VALUES($1, $2, $3, $4, $5) RETURNING *',
+    values: [unit.barcode, product_id, unit.property, unit.quantity, currentTime()]
   };
 
   return dbops.query(query);
@@ -516,6 +520,7 @@ exports.saveUnit = (unit)=> {
 }
 
 currentTime = () => {
+
   date = new Date();
   date = date.getUTCFullYear() + '-' +
       ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
@@ -525,4 +530,5 @@ currentTime = () => {
       ('00' + date.getUTCSeconds()).slice(-2);
   
   return date;
+
 }
