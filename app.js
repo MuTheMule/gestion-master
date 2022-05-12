@@ -75,12 +75,11 @@ app.get('/dev/:action', (request, response) => {
 });
 
 app.get('/saveProduct',(request,response) => {
-    console.log('fetched successfully : '+request.query.prix+", "+request.query.designation+", "+request.query.codebar);
     
     const product = {
-        prix: request.query.prix,
         designation: request.query.designation,
-        codebar: request.query.codebar
+        stock_price: request.query.stock_price,
+        unit_price: request.query.unit_price,
     };
 
     const result = async () => {

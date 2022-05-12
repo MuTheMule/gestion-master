@@ -491,14 +491,38 @@ exports.getGainsTotalDeJour = (date) => {
   return dbops.query(query);
 }
 
-exports.saveProduit = (produit)=> {
+exports.saveProduit = (product) => {
 
   const query = {
-    name: 'save-produit',
-    text: 'INSERT INTO produit(prix, designation, codebar) VALUES($1, $2, $3) RETURNING *',
-    values: [produit.prix, produit.designation, produit.codebar]
+    name: 'save-product',
+    text: 'INSERT INTO product(designation, stock_price, unit_price, timestamp) VALUES($1, $2, $3, $4) RETURNING *',
+    values: [product.designation, product.stock_price, product.unit_price, currentTime()]
   };
 
   return dbops.query(query);
 
+}
+
+exports.saveUnit = (unit)=> {
+
+  const query = {
+    name: 'save-product',
+    text: 'INSERT INTO product(designation, stock_price, unit_price, timestamp) VALUES($1, $2, $3, $4) RETURNING *',
+    values: [produit.designation, produit.stock_price, produit.unit_price, produit.timestamp]
+  };
+
+  return dbops.query(query);
+
+}
+
+currentTime = () => {
+  date = new Date();
+  date = date.getUTCFullYear() + '-' +
+      ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
+      ('00' + date.getUTCDate()).slice(-2) + ' ' + 
+      ('00' + date.getUTCHours()).slice(-2) + ':' + 
+      ('00' + date.getUTCMinutes()).slice(-2) + ':' + 
+      ('00' + date.getUTCSeconds()).slice(-2);
+  
+  return date;
 }
