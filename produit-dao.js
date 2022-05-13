@@ -505,14 +505,10 @@ exports.saveProduit = (product) => {
 
 exports.saveUnit = (unit)=> {
 
-  const product_id = this.getProduitByCodebar(unit.codebar);
-
-  console.log(product_id);
-
   const query = {
     name: 'save-unit',
     text: 'INSERT INTO unit(barcode, product_id, property, quantity, timestamp) VALUES($1, $2, $3, $4, $5) RETURNING *',
-    values: [unit.barcode, product_id, unit.property, unit.quantity, currentTime()]
+    values: [unit.barcode, unit.product_id, unit.property, unit.quantity, currentTime()]
   };
 
   return dbops.query(query);

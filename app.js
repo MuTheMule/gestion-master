@@ -76,40 +76,90 @@ app.get('/dev/:action', (request, response) => {
 
 app.get('/saveProduct',(request,response) => {
     
-    const product = {
-        designation: request.query.designation,
-        stock_price: request.query.stock_price,
-        unit_price: request.query.unit_price,
-    };
+    var productId = request.query.product_id;
 
-    const result = async () => {
-        const data = await produitDAO.saveProduit(product);
-        return data;
+    if(productId!='undefined'&&productId){
+
+        console.log("productId is defined and = "+productId);
+
+        if(request.query.barcode!='undefined'||request.query.property!='undefined'||request.query.quantity!='undefined'){
+
+            const unit = {
+                barcode: request.query.barcode,
+                property: request.query.property,
+                quantity: request.query.quantity,
+                product_id: productId
+            };
+    
+            const result = async () => {
+                const data = await produitDAO.saveUnit(unit);
+                return data;
+            }
+
+            result().then(data => {
+                if(typeof data !== 'undefined' && data){
+                    console.log(data);
+                }
+                else{
+                    console.log('Unable to save unit!');
+                }
+            });
+        }    
     }
-    result().then(data => {
-        if(typeof data !== 'undefined' && data){
-            console.log(data);
+    else{
+
+        console.log("productId is undefined and = "+productId);
+
+        const product = {
+            designation: request.query.designation,
+            stock_price: request.query.stock_price,
+            unit_price: request.query.unit_price,
+        };
+    
+        const result = async () => {
+            const data = await produitDAO.saveProduit(product);
+            return data;
         }
-        else{
-            console.log('Unable to save product!');
-        }
-    });
+        
+        result().then(data => {
+            if(typeof data !== 'undefined' && data){
+                
+                console.log(data);
+                productId = data[0].id;
+                
+                if(request.query.barcode!='undefined'||request.query.property!='undefined'||request.query.quantity!='undefined'){
+
+                    const unit = {
+                        barcode: request.query.barcode,
+                        property: request.query.property,
+                        quantity: request.query.quantity,
+                        product_id: productId
+                    };
+            
+                    const result = async () => {
+                        const data = await produitDAO.saveUnit(unit);
+                        return data;
+                    }
+                    result().then(data => {
+                        if(typeof data !== 'undefined' && data){
+                            console.log(data);
+                        }
+                        else{
+                            console.log('Unable to save unit!');
+                        }
+                    });
+            
+                }
+
+            }
+            else{
+                console.log('Unable to save product!');
+            }
+        });
+    }
 });
 
-app.get('/saveUnit',(request,response) => {
-
-    const product_id = async () => {
-        const data = await produitDAO.getProduitByCodebar(request.query.barcode);
-        return data;
-    }
-    product_id().then(data => {
-        if(typeof data !== 'undefined' && data){
-            console.log(data);
-        }
-        else{
-            console.log('Unable to fetch product!');
-        }
-    });
+/*app.get('/saveUnit',(request,response) => {
 
     const unit = {
         barcode: request.query.barcode,
@@ -130,7 +180,8 @@ app.get('/saveUnit',(request,response) => {
             console.log('Unable to save unit!');
         }
     });
-});
+
+});*/
 
 app.get('/scanProduct', (request, response) => {
     console.log('fetched successfully : '+request.query.codebar);
