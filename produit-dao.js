@@ -491,6 +491,30 @@ exports.getGainsTotalDeJour = (date) => {
   return dbops.query(query);
 }
 
+exports.getTransactionsAvecCredit = (person) => {
+
+  const query = {
+    name: 'fetch-transactions-with-debt-per-person',
+    text: 'select sum(select * from transaction where receipt_id in (select id from receipt where person = $1 and debt <> 0)',
+    values: [person]
+  };
+
+  return dbops.query(query);
+
+}
+
+exports.getCreditParPersonne = () => {
+
+  const query = {
+    name: 'fetch-debt-per-person',
+    text: 'select person, sum(debt) from receipt where debt <> 0 group by person;',
+    values: []
+  };
+
+  return dbops.query(query);
+
+}
+
 exports.saveProduit = (product) => {
 
   const query = {
@@ -503,7 +527,7 @@ exports.saveProduit = (product) => {
 
 }
 
-exports.saveUnit = (unit)=> {
+exports.saveUnit = (unit) => {
 
   const query = {
     name: 'save-unit',
@@ -514,6 +538,31 @@ exports.saveUnit = (unit)=> {
   return dbops.query(query);
 
 }
+
+exports.saveTransaction = (transaction) => {
+
+  const query = {
+    name: 'save-transaction',
+    text: 'INSERT INTO transaction(unit_code, receipt_id, quantity, status, stock_price, unit_price) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
+    values: [transaction.unit_code, transaction.receipt_id, transaction.quantity, transaction.status, transaction.stock_price, transaction.unit_price]
+  };
+
+  return dbops.query(query);
+
+}
+
+exports.saveReceipt = (receipt) => {
+
+  const query = {
+    name: 'save-receipt',
+    text: 'INSERT INTO receipt(person, debt, timestamp) VALUES($1, $2, $3) RETURNING *',
+    values: [receipt.person, receipt.debt, currentTime()]
+  };
+
+  return dbops.query(query);
+
+}
+
 
 currentTime = () => {
 

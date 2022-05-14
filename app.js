@@ -74,6 +74,59 @@ app.get('/dev/:action', (request, response) => {
 
 });
 
+app.get('/saveReceipt',(request,response) => {
+
+    const result = async () => {
+
+        const receipt = {
+            person : request.query.person,
+            debt : request.query.debt
+        };
+
+        const data = await produitDAO.saveReceipt(receipt);
+        return data;
+    }
+
+    result().then(data => {
+        
+        var receiptId = data[0].id;
+
+        if(typeof data !== 'undefined' && data){
+            
+            const data = [];
+
+            const result = async() => {
+                for(i = 0 ; i < request.query.unit_code.length ; i ++){
+                    const transaction = {
+                        unit_code : request.query.unit_code[i],
+                        receipt_id : receiptId,
+                        quantity : request.query.quantity[i],
+                        status : 't',
+                        stock_price : request.query.stock_price[i],
+                        unit_price : request.query.unit_price[i]
+                    }
+                    console.log(transaction);
+                    data.push(await produitDAO.saveTransaction(transaction));
+                }
+                return data;
+            }
+            result().then(data => {
+                if(typeof data !== 'undefined' && data){
+                    console.log(data);
+                }
+                else{
+                    console.log('Unable to save transaction!');
+                }
+            });
+
+        }
+        else{
+            console.log('Unable to save receipt!');
+        }
+    });
+
+});
+
 app.get('/saveProduct',(request,response) => {
     
     var productId = request.query.product_id;
@@ -158,30 +211,6 @@ app.get('/saveProduct',(request,response) => {
         });
     }
 });
-
-/*app.get('/saveUnit',(request,response) => {
-
-    const unit = {
-        barcode: request.query.barcode,
-        property: request.query.property,
-        quantity: request.query.quantity,
-        product_id: product_id()
-    };
-
-    const result = async () => {
-        const data = await produitDAO.saveUnit(unit);
-        return data;
-    }
-    result().then(data => {
-        if(typeof data !== 'undefined' && data){
-            console.log(data);
-        }
-        else{
-            console.log('Unable to save unit!');
-        }
-    });
-
-});*/
 
 app.get('/scanProduct', (request, response) => {
     console.log('fetched successfully : '+request.query.codebar);
