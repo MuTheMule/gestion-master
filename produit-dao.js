@@ -480,11 +480,33 @@ exports.getToutProduits = () => {
   return dbops.query(query);
 }
 
+exports.getToutFactures = () => {
+
+  const query = {
+      name: 'fetch-all-receipts',
+      text: 'select receipt_id, unit_code, quantity from transaction, receipt where receipt.id = transaction.receipt_id',
+      values: []
+    };
+  
+  return dbops.query(query);
+}
+
 exports.getGainsTotalDeJour = (date) => {
 
   const query = {
       name: 'fetch-daily-gains',
       text: 'select sum(transaction.unit_price*transaction.quantity) from transaction, product, unit, receipt where transaction.unit_code = unit.barcode and unit.product_id = product.id and transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getFondsTotalDeJour = (date) => {
+
+  const query = {
+      name: 'fetch-daily-funds',
+      text: 'select sum(stock_price*quantity) from transaction,receipt where transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
       values: [date]
     };
   
@@ -562,7 +584,29 @@ exports.saveReceipt = (receipt) => {
   return dbops.query(query);
 
 }
+exports.updateStockQuantity = (barcode,quantity) => {
 
+  var query = {
+    name: 'update-stock-quantity',
+    text: 'update unit set quantity = quantity - $1 where barcode = $2 returning *',
+    values : [quantity,barcode]
+  };
+
+  return dbops.query(query);
+
+}
+
+exports.updateStockPrice = (id,stockPrice) => {
+
+  var query = {
+    name: 'update-stock-price',
+    text: 'update product set stock_price = $1 where id = $2 returning *',
+    values : [stockPrice,id]
+  };
+
+  return dbops.query(query);
+
+}
 
 currentTime = () => {
 

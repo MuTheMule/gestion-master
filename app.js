@@ -113,6 +113,57 @@ app.get('/saveReceipt',(request,response) => {
             result().then(data => {
                 if(typeof data !== 'undefined' && data){
                     console.log(data);
+
+                            const barcode = data[0].unit_code;
+
+                            var quantityReduced = data[0].quantity;
+                            var stockPriceChanged = data[0].stock_price;
+
+                            const result = async () => {
+                                const product = await produitDAO.getProduitByCodebar(barcode);
+                                return product;
+                            }
+                            
+                            result().then(product => {
+                                if(typeof product !== 'undefined' && product){
+                                    console.log(product);
+
+                                    if(quantityReduced - product.quantity < 0){
+                                        quantityReduced = product.quantity;
+                                    }
+
+                                    const result = async () => {
+                                        const data = await produitDAO.updateStockQuantity(barcode,quantityReduced);
+                                        return data;
+                                    }
+                                    result().then(data =>{
+                                        if(typeof data !== 'undefined' && data){
+                                            console.log(data);
+
+                                            const result = async () => {
+                                                const data = await produitDAO.updateStockPrice(product.id,stockPriceChanged);
+                                                return data;
+                                            }
+                                            result().then(data=>{
+                                                if(typeof data !== 'undefined' && data){
+                                                    console.log(data);
+                                                }
+                                                else{
+                                                    console.log("Unable to update stock price!");
+                                                }
+                                            });
+
+                                        }
+                                        else{
+                                            console.log('Unable to update stock quantity!');
+                                        }
+                                    });
+
+                                }
+                                else
+                                    console.log('No such product!');
+                            });
+                
                 }
                 else{
                     console.log('Unable to save transaction!');
