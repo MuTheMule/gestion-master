@@ -304,10 +304,9 @@ app.get('/updateCredit', (request, response) => {
         if(typeof data !== 'undefined' && data)
             console.log(data);
         else
-            console.log('No such product!');
+            console.log('Unable to update credit!');
     });
 });
-
 
 app.get('/scanProduct', (request, response) => {
     console.log('fetched successfully : '+request.query.codebar);

@@ -392,6 +392,8 @@ exports.getCreditDuJour = ()=> {
   return dbops.query(query);
 }
 
+//TODO getRetourParDate()
+
 exports.getCreditParDate = (date)=> {
 
   const query = {
@@ -528,7 +530,7 @@ exports.getGainsTotalParDate = (date) => {
 
   const query = {
       name: 'fetch-daily-gains-per-given-date',
-      text: 'select sum(transaction.unit_price*transaction.quantity) from transaction, product, unit, receipt where transaction.unit_code = unit.barcode and unit.product_id = product.id and transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
+      text: 'select sum(unit_price*quantity) from transaction, receipt where transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
       values: [date]
     };
   
@@ -540,6 +542,17 @@ exports.getFondsTotalParDate = (date) => {
   const query = {
       name: 'fetch-daily-funds-per-given-date',
       text: 'select sum(stock_price*quantity) from transaction,receipt where transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getGainsNetParDate = (date) => {
+
+  const query = {
+      name: 'fetch-pure-gains-per-given-date',
+      text: 'select sum((unit_price-stock_price)*quantity) from transaction, receipt where transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
       values: [date]
     };
   
