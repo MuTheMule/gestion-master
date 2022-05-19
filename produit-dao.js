@@ -392,6 +392,17 @@ exports.getCreditDuJour = ()=> {
   return dbops.query(query);
 }
 
+exports.getCreditParDate = (date)=> {
+
+  const query = {
+      name: 'fetchcredit-per-given-date',
+      text: 'select sum(debt) from receipt where timestamp::date = $1',
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
+
 exports.getMeilleurProduit = ()=> {
 
   const query = {
@@ -491,10 +502,32 @@ exports.getToutFactures = () => {
   return dbops.query(query);
 }
 
-exports.getGainsTotalDeJour = (date) => {
+exports.getFacturesParDate = (date) => {
 
   const query = {
-      name: 'fetch-daily-gains',
+      name: 'fetch-receipts-per-given-date',
+      text: 'select receipt_id, unit_code, quantity, stock_price, unit_price, person, debt from transaction, receipt where receipt.id = transaction.receipt_id and receipt.timestamp::date = $1',
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getGainsFacturesValidesParDate = (date) => {
+
+  const query = {
+      name: 'fetch-valid-receipts-gains-per-given-date',
+      text: 'select sum(transaction.unit_price*transaction.quantity) from transaction, product, unit, receipt where transaction.unit_code = unit.barcode and unit.product_id = product.id and transaction.receipt_id = receipt.id and receipt.timestamp::date = $1 and receipt.debt = 0;',
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
+
+exports.getGainsTotalParDate = (date) => {
+
+  const query = {
+      name: 'fetch-daily-gains-per-given-date',
       text: 'select sum(transaction.unit_price*transaction.quantity) from transaction, product, unit, receipt where transaction.unit_code = unit.barcode and unit.product_id = product.id and transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
       values: [date]
     };
@@ -502,10 +535,10 @@ exports.getGainsTotalDeJour = (date) => {
   return dbops.query(query);
 }
 
-exports.getFondsTotalDeJour = (date) => {
+exports.getFondsTotalParDate = (date) => {
 
   const query = {
-      name: 'fetch-daily-funds',
+      name: 'fetch-daily-funds-per-given-date',
       text: 'select sum(stock_price*quantity) from transaction,receipt where transaction.receipt_id = receipt.id and receipt.timestamp::date = $1',
       values: [date]
     };
@@ -517,7 +550,7 @@ exports.getTransactionsAvecCredit = (person) => {
 
   const query = {
     name: 'fetch-transactions-with-debt-per-person',
-    text: 'select sum(select * from transaction where receipt_id in (select id from receipt where person = $1 and debt <> 0)',
+    text: 'select * from transaction where receipt_id in (select id from receipt where person = $1 and debt <> 0)',
     values: [person]
   };
 
@@ -584,12 +617,25 @@ exports.saveReceipt = (receipt) => {
   return dbops.query(query);
 
 }
+
 exports.updateStockQuantity = (barcode,quantity) => {
 
   var query = {
     name: 'update-stock-quantity',
-    text: 'update unit set quantity = quantity - $1 where barcode = $2 returning *',
+    text: 'update unit set quantity = quantity + $1 where barcode = $2 returning *',
     values : [quantity,barcode]
+  };
+
+  return dbops.query(query);
+
+}
+
+exports.updateCredit = (id,debtReduced) => {
+
+  const query = {
+    name: 'updateCredit',
+    text: 'update receipt set debt = debt - $1 where id = $2;',
+    values: [debtReduced,id]
   };
 
   return dbops.query(query);

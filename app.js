@@ -74,6 +74,50 @@ app.get('/dev/:action', (request, response) => {
 
 });
 
+app.get('/saveRetour',(request,response) => {
+    
+    const result = async () => {
+
+            const transaction = {
+                unit_code : request.query.unit_code,
+                receipt_id : null,
+                quantity : request.query.quantity,
+                status : 'f',
+                stock_price : request.query.stock_price,
+                unit_price : request.query.unit_price
+            }
+
+        const data = await produitDAO.saveTransaction(transaction);
+        return data;
+    }
+
+    result().then(data => {
+        if(typeof data !== 'undefined' && data){
+            console.log(data);
+
+            const barcode = data[0].unit_code;
+            const quantityReturned = data[0].quantity;
+
+            const result = async () => {
+                const data = await produitDAO.updateStockQuantity(barcode,quantityReturned);
+                return data;
+            }
+            result().then(data =>{
+                if(typeof data !== 'undefined' && data){
+                    console.log(data);
+                }
+                else{
+                    console.log('Unable to update stock quantity!')
+                }
+            });
+
+        }
+        else{
+            console.log('Unable to save retour');
+        }
+    });
+});
+
 app.get('/saveReceipt',(request,response) => {
 
     const result = async () => {
@@ -133,26 +177,12 @@ app.get('/saveReceipt',(request,response) => {
                                     }
 
                                     const result = async () => {
-                                        const data = await produitDAO.updateStockQuantity(barcode,quantityReduced);
+                                        const data = await produitDAO.updateStockQuantity(barcode,-quantityReduced);
                                         return data;
                                     }
                                     result().then(data =>{
                                         if(typeof data !== 'undefined' && data){
                                             console.log(data);
-
-                                            const result = async () => {
-                                                const data = await produitDAO.updateStockPrice(product.id,stockPriceChanged);
-                                                return data;
-                                            }
-                                            result().then(data=>{
-                                                if(typeof data !== 'undefined' && data){
-                                                    console.log(data);
-                                                }
-                                                else{
-                                                    console.log("Unable to update stock price!");
-                                                }
-                                            });
-
                                         }
                                         else{
                                             console.log('Unable to update stock quantity!');
