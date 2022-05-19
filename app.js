@@ -293,6 +293,22 @@ app.get('/saveProduct',(request,response) => {
     }
 });
 
+app.get('/updateCredit', (request, response) => {
+
+    const result = async () => {
+        const data = await produitDAO.updateCredit(request.query.id,request.query.quantity_reduced);
+        return data;
+    }
+    
+    result().then(data => {
+        if(typeof data !== 'undefined' && data)
+            console.log(data);
+        else
+            console.log('No such product!');
+    });
+});
+
+
 app.get('/scanProduct', (request, response) => {
     console.log('fetched successfully : '+request.query.codebar);
     const result = async () => {

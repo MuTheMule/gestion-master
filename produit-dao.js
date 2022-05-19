@@ -633,7 +633,7 @@ exports.updateStockQuantity = (barcode,quantity) => {
 exports.updateCredit = (id,debtReduced) => {
 
   const query = {
-    name: 'updateCredit',
+    name: 'update-credit',
     text: 'update receipt set debt = debt - $1 where id = $2;',
     values: [debtReduced,id]
   };
