@@ -392,12 +392,21 @@ exports.getCreditDuJour = ()=> {
   return dbops.query(query);
 }
 
-//TODO getRetourParDate()
+exports.getRetourParDate = (date)=> {
+
+  const query = {
+      name: 'fetch-retour-per-given-date',
+      text: "select sum(transaction.unit_price*transaction.quantity) from transaction, receipt where receipt_id = receipt.id and timestamp::date = $1 and status = 'f';",
+      values: [date]
+    };
+  
+  return dbops.query(query);
+}
 
 exports.getCreditParDate = (date)=> {
 
   const query = {
-      name: 'fetchcredit-per-given-date',
+      name: 'fetch-credit-per-given-date',
       text: 'select sum(debt) from receipt where timestamp::date = $1',
       values: [date]
     };
@@ -557,6 +566,7 @@ exports.getGainsNetParDate = (date) => {
     };
   
   return dbops.query(query);
+  
 }
 
 exports.getTransactionsAvecCredit = (person) => {
